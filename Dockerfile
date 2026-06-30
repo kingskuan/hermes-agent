@@ -109,5 +109,12 @@ RUN uv pip install --no-cache-dir --no-deps -e "."
 ENV HERMES_WEB_DIST=/opt/hermes/hermes_cli/web_dist
 ENV HERMES_HOME=/opt/data
 ENV PATH="/opt/data/.local/bin:${PATH}"
-VOLUME [ "/opt/data" ]
+# NOTE: No `VOLUME [ "/opt/data" ]` declaration here on purpose.
+# It was only ever declarative — persistence comes from an explicit runtime
+# mount (docker-compose binds ~/.hermes:/opt/data; `docker run` users pass
+# `-v ...:/opt/data`; on Railway you attach a Railway Volume at /opt/data).
+# Railway's builder rejects the Dockerfile outright if a VOLUME instruction is
+# present ("docker VOLUME ... is not supported, use Railway Volumes"), so
+# declaring it here would break Railway deploys without adding anything that
+# the runtime mount doesn't already provide.
 ENTRYPOINT [ "/usr/bin/tini", "-g", "--", "/opt/hermes/docker/entrypoint.sh" ]
